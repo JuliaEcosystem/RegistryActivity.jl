@@ -1,0 +1,13 @@
+name = "RegistryActivity"
+uuid = "9b0d46d6-29c5-42d9-9186-097e7e625ad5"
+authors = ["Mosè Giordano <mose@gnu.org>"]
+version = "0.1.0"
+
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+
+[compat]
+julia = "1.6"
