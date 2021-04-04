@@ -7,4 +7,5 @@ makedocs(
 
 deploydocs(
     repo = "github.com/JuliaEcosystem/RegistryActivity.jl.git",
+    devbranch = "main",
 )
