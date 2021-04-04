@@ -10,7 +10,7 @@
 ## Usage
 
 ```julia
-usage RegistryActivity
+using RegistryActivity
 months, packages, versions = registry_activity()
 ```
 
