@@ -4,7 +4,7 @@ using LibGit2
 using Dates
 
 origin = let
-    general_path = RegistryActivity.find_general()
+    general_path = RegistryActivity.general_registry()
     try
         # If the local General registry is a git repository, use it...
         LibGit2.GitRepo(general_path)
