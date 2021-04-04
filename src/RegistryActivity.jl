@@ -37,17 +37,17 @@ function extrema_dates(path)
     return extrema(dates)
 end
 
-function months_list(path, start)
+function months_list(path, start_month, end_month)
     min_month, max_month = extrema_dates(path)
-    min_month = max(Date(year(min_month), month(min_month)), start)
-    max_month = Date(year(max_month), month(max_month))
+    min_month = max(Date(year(min_month), month(min_month)), start_month)
+    max_month = min(Date(year(max_month), month(max_month)), end_month)
     return min_month:Month(1):max_month
 end
 
 function checkout_date(path, date::Date;
                        branch="master",
                        )
-    revision = readchomp(`git -C $(path) rev-list -n 1 --first-parent --before="$(date) 00:00:00" $(branch)`)
+    revision = readchomp(`git -C $(path) rev-list -n 1 --first-parent --before="$(date) 00:00:00 +0000" $(branch)`)
     LibGit2.checkout!(GitRepo(path), revision)
 end
 
@@ -70,18 +70,24 @@ end
 
 function registry_activity(path=clone_registry();
                            branch="master",
-                           start=Date(2018, 2),
+                           # By default start from the first month there has
+                           # been some actual activity in General
+                           start_month=Date(2018, 2),
+                           end_month=Date(year(now(UTC)), month(now(UTC))),
+                           # By default exclude JLL packages and the virtual "julia" package
                            filter=p->!(occursin(r"_jll$", last(p)["name"]) || last(p)["name"]=="julia"),
                            )
     repo = LibGit2.GitRepo(path)
     commit = LibGit2.GitHash(LibGit2.lookup_branch(repo, branch))
     LibGit2.checkout!(repo, string(commit))
-    months = months_list(path, start)
+    months = months_list(path, start_month, end_month)
     packages = Vector{Int}(undef, length(months))
     versions = Vector{Int}(undef, length(months))
     for idx in eachindex(months)
+        # Check out the registry at midnight of the first day of the month after
         checkout_date(path, months[idx] + Month(1))
         packages_list = if isfile(joinpath(path, "registry.toml"))
+            # The registry file used to be call "registry.toml" at some point.
             TOML.parsefile(joinpath(path, "registry.toml"))["packages"]
         else
             TOML.parsefile(joinpath(path, "Registry.toml"))["packages"]
@@ -90,6 +96,8 @@ function registry_activity(path=clone_registry();
         packages[idx] = count_packages(path, packages_list)
         versions[idx] = count_versions(path, packages_list)
     end
+    # Restore target commit.
+    LibGit2.checkout!(repo, string(commit))
     return months, packages, versions
 end
 
